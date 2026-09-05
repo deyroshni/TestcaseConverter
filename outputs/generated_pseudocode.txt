@@ -1,0 +1,79 @@
+```python
+import pytest
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+class TestWorkflow:
+
+    def setup_method(self):
+        self.driver = webdriver.Chrome()
+        self.driver.maximize_window()
+        self.wait = WebDriverWait(self.driver, 60)
+
+    def teardown_method(self):
+        self.driver.quit()
+
+    def wait_for_element_visible(self, locator):
+        return self.wait.until(EC.visibility_of_element_located(locator))
+
+    def enter_text(self, locator, text):
+        element = self.wait_for_element_visible(locator)
+        element.clear()
+        element.send_keys(text)
+
+    def click_element(self, locator):
+        element = self.wait.until(EC.element_to_be_clickable(locator))
+        element.click()
+
+    def validate_title_contains(self, text):
+        assert text in self.driver.title, f"Title does not contain {text}"
+
+    def test_workflow(self):
+        # Navigate to login page
+        self.driver.get("file:///C:/Users/rosdey/Downloads/TestcaseConverter/ui/index.html")
+        
+        # Login with valid credentials
+        self.enter_text((By.ID, "username"), "deyroshni")
+        self.enter_text((By.ID, "password"), "1234")
+        self.click_element((By.XPATH, "//button[normalize-space(text())='Login']"))
+        
+        # Validate login success - Main Dashboard page loaded
+        self.validate_title_contains("Main Dashboard")
+        
+        # Validate header and tabs are displayed
+        header_element = self.wait_for_element_visible((By.XPATH, "//b[normalize-space(text())='S&S RajaMouli']"))
+        assert header_element.is_displayed(), "Header not displayed"
+        
+        system_tab = self.wait_for_element_visible((By.ID, "systemTab"))
+        onboarding_tab = self.wait_for_element_visible((By.ID, "onboardingTab"))
+        assert system_tab.is_displayed(), "System tab not displayed"
+        assert onboarding_tab.is_displayed(), "Onboarding tab not displayed"
+        
+        # Click on Ticket tab
+        self.click_element((By.ID, "onboardingTab"))
+        
+        # Validate Ticket tab is displayed
+        ticket_title = self.wait_for_element_visible((By.XPATH, "//div[normalize-space(text())='Ticket']"))
+        assert ticket_title.is_displayed(), "Ticket title not displayed"
+        
+        # Click on Add button
+        self.click_element((By.XPATH, "//button[normalize-space(text())='Add']"))
+        
+        # Validate Add Information popup is displayed
+        add_info_modal = self.wait_for_element_visible((By.XPATH, "//h3[normalize-space(text())='Add Information']"))
+        assert add_info_modal.is_displayed(), "Add Information popup not displayed"
+        
+        # Enter tenant details
+        self.enter_text((By.ID, "tenantName"), "Roshni")
+        self.enter_text((By.ID, "tenantAge"), "22")
+        self.enter_text((By.ID, "tenantId"), "XX-22")
+        
+        # Click Save button
+        self.click_element((By.XPATH, "//button[normalize-space(text())='Save']"))
+        
+        # Validate information added to Ticket List
+        ticket_row = self.wait_for_element_visible((By.XPATH, "//td[normalize-space(text())='Roshni']"))
+        assert ticket_row.is_displayed(), "Ticket information not added to list"
+```

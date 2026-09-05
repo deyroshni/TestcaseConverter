@@ -1,0 +1,10 @@
+streamlit
+requests
+truststore
+python-docx
+pandas
+openpyxl
+PyPDF2
+python-dotenv
+reportlab
+beautifulsoup4

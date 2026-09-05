@@ -1,0 +1,108 @@
+```python
+import pytest
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
+import tempfile
+
+class TestWorkflow:
+    def setup_method(self):
+        # Initialize Chrome browser with options
+        self.temp_profile = tempfile.TemporaryDirectory()
+        options = Options()
+        prefs = {
+            "credentials_enable_service": False,
+            "profile.password_manager_enabled": False,
+            "profile.password_manager_leak_detection": False
+        }
+        options.add_experimental_option("prefs", prefs)
+        options.add_argument(f"--user-data-dir={self.temp_profile.name}")
+        
+        self.driver = webdriver.Chrome(options=options)
+        self.driver.maximize_window()
+        self.wait = WebDriverWait(self.driver, 60)
+
+    def teardown_method(self):
+        # Clean up the temporary profile and quit the driver
+        if hasattr(self, 'driver'):
+            self.driver.quit()
+        self.temp_profile.cleanup()
+
+    def wait_for_element_visible(self, locator):
+        return self.wait.until(EC.visibility_of_element_located(locator))
+
+    def enter_text(self, locator, text):
+        element = self.wait_for_element_visible(locator)
+        element.clear()
+        element.send_keys(text)
+
+    def click_element(self, locator):
+        element = self.wait.until(EC.element_to_be_clickable(locator))
+        element.click()
+
+    def validate_title_contains(self, text):
+        assert text in self.driver.title, f"Title does not contain '{text}'"
+
+    def step_navigate_to_login_page(self):
+        self.driver.get("https://www.saucedemo.com")
+
+    def step_enter_username(self):
+        # TODO: Locator not found in UI_CONTEXT
+        pass
+
+    def step_enter_password(self):
+        # TODO: Locator not found in UI_CONTEXT
+        pass
+
+    def step_click_login(self):
+        # TODO: Locator not found in UI_CONTEXT
+        pass
+
+    def step_validate_dashboard(self):
+        self.validate_title_contains("Swag Labs")
+
+    def step_add_to_cart_sauce_labs_backpack(self):
+        # TODO: Locator not found in UI_CONTEXT
+        pass
+
+    def step_add_to_cart_sauce_labs_onesie(self):
+        # TODO: Locator not found in UI_CONTEXT
+        pass
+
+    def step_click_shopping_cart_icon(self):
+        # TODO: Locator not found in UI_CONTEXT
+        pass
+
+    def step_validate_your_cart_title(self):
+        # TODO: Locator not found in UI_CONTEXT
+        pass
+
+    def step_validate_cart_items(self):
+        # TODO: Locator not found in UI_CONTEXT
+        pass
+
+    def step_remove_sauce_labs_onesie(self):
+        # TODO: Locator not found in UI_CONTEXT
+        pass
+
+    def step_click_checkout(self):
+        # TODO: Locator not found in UI_CONTEXT
+        pass
+
+    @pytest.mark.workflow
+    def test_workflow(self):
+        self.step_navigate_to_login_page()
+        self.step_enter_username()
+        self.step_enter_password()
+        self.step_click_login()
+        self.step_validate_dashboard()
+        self.step_add_to_cart_sauce_labs_backpack()
+        self.step_add_to_cart_sauce_labs_onesie()
+        self.step_click_shopping_cart_icon()
+        self.step_validate_your_cart_title()
+        self.step_validate_cart_items()
+        self.step_remove_sauce_labs_onesie()
+        self.step_click_checkout()
+```

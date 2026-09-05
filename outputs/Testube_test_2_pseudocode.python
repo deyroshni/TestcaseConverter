@@ -1,0 +1,103 @@
+```python
+import pytest
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
+import tempfile
+
+class TestWorkflow:
+
+    def setup_method(self):
+        self.temp_profile = tempfile.TemporaryDirectory()
+        prefs = {
+            "credentials_enable_service": False,
+            "profile.password_manager_enabled": False,
+            "profile.password_manager_leak_detection": False
+        }
+        options = Options()
+        options.add_argument(f"user-data-dir={self.temp_profile.name}")
+        options.add_experimental_option("prefs", prefs)
+        self.driver = webdriver.Chrome(options=options)
+        self.driver.maximize_window()
+        self.wait = WebDriverWait(self.driver, 60)
+
+    def teardown_method(self):
+        self.driver.quit()
+        self.temp_profile.cleanup()
+
+    def wait_for_element_visible(self, locator):
+        return self.wait.until(EC.visibility_of_element_located(locator))
+
+    def enter_text(self, locator, text):
+        element = self.wait.until(EC.visibility_of_element_located(locator))
+        element.clear()
+        element.send_keys(text)
+
+    def click_element(self, locator):
+        element = self.wait.until(EC.element_to_be_clickable(locator))
+        element.click()
+
+    def validate_title_contains(self, text):
+        assert text in self.driver.title, f"Title does not contain '{text}'"
+
+    def step_navigate_to_login_page(self):
+        self.driver.get("file:///c%3A/Users/rosdey/Downloads/TestcaseConverter/ui/index.html")
+
+    def step_enter_username(self):
+        self.enter_text((By.ID, "username"), "deyroshni")
+
+    def step_enter_password(self):
+        self.enter_text((By.ID, "password"), "1234")
+
+    def step_click_login(self):
+        self.click_element((By.XPATH, "//button[normalize-space(text())='Login']"))
+
+    def step_validate_dashboard(self):
+        self.validate_title_contains("Main Dashboard")
+
+    def step_click_ticket_tab(self):
+        self.click_element((By.ID, "onboardingTab"))
+
+    def step_validate_ticket_page(self):
+        self.wait_for_element_visible((By.XPATH, "//div[normalize-space(text())='Ticket']"))
+
+    def step_click_add_button(self):
+        self.click_element((By.CSS_SELECTOR, ".add-btn"))
+
+    def step_validate_add_popup(self):
+        self.wait_for_element_visible((By.XPATH, "//h3[normalize-space(text())='Add Information']"))
+
+    def step_enter_tenant_name(self):
+        self.enter_text((By.ID, "tenantName"), "Roshni")
+
+    def step_enter_tenant_age(self):
+        self.enter_text((By.ID, "tenantAge"), "22")
+
+    def step_enter_tenant_id(self):
+        self.enter_text((By.ID, "tenantId"), "XX-22")
+
+    def step_click_save(self):
+        self.click_element((By.CSS_SELECTOR, ".save-btn"))
+
+    def step_validate_record_added(self):
+        self.wait_for_element_visible((By.XPATH, "//td[normalize-space(text())='Roshni']"))
+
+    def test_workflow(self):
+        self.step_navigate_to_login_page()
+        self.step_enter_username()
+        self.step_enter_password()
+        self.step_click_login()
+        self.step_validate_dashboard()
+        self.step_click_ticket_tab()
+        self.step_validate_ticket_page()
+        self.step_click_add_button()
+        self.step_validate_add_popup()
+        self.step_enter_tenant_name()
+        self.step_enter_tenant_age()
+        self.step_enter_tenant_id()
+        self.step_click_save()
+        self.step_validate_record_added()
+
+```
